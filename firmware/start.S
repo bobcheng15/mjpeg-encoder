@@ -6,10 +6,10 @@
 // means.
 
 #define ENABLE_QREGS
-//#define ENABLE_DNN_MMAP
+#define ENABLE_DNN_MMAP
 #define ENABLE_STATS
-#define ENABLE_MULTST
-#define ENABLE_DNN_PCPI
+//#define ENABLE_MULTST
+//#define ENABLE_DNN_PCPI
 
 // Only save registers in IRQ wrapper that are to be saved by the caller in
 // the RISC-V ABI, with the excpetion of the stack pointer. The IRQ handler

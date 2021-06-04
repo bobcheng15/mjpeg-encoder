@@ -56,10 +56,27 @@ void soft_conv(int *input_shape, int *weight_shape, int *output_shape, volatile 
 
 	int P = output_shape[2];
 	int Q = output_shape[3];
-
-	for(int i=0; i< output_shape[0]*output_shape[1]*output_shape[2]*output_shape[3]; i++){
-		*(output_data + i) = -1;
-	}
+    for (int n = 0; n < N; n ++){
+        for (int m = 0; m < M; m ++){
+            for (int p = 0; p < P; p ++){
+                for (int q = 0; q < Q; q ++){
+                    int index_o = ((n * M + m) * P + p) * Q + q;
+                    *(output_data + index_o) = 0;
+                    for (int r = 0; r < R; r ++){
+                        for (int s = 0; s < S; s++){
+                            for (int c = 0; c < C; c++){
+                                int h = p + r;
+                                int w = q + s;
+                                int index_i = ((n * C + c) * H + h) * W + w;
+                                int index_w = ((m * C + c) * R + r) * S + s;
+                                *(output_data + index_o) += *(input_data + index_i) * *(weight_data + index_w);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 // TODO 2
@@ -79,9 +96,27 @@ void soft_fc(int *input_shape, int *weight_shape, int *output_shape, volatile in
 	int R = weight_shape[2];
 	int S = weight_shape[3];
 
-	for(int i=0; i< output_shape[0]*output_shape[1]*output_shape[2]*output_shape[3]; i++){
-		*(output_data + i) = -1;
-	}
+	for (int n = 0; n < N; n ++){
+        for (int m = 0; m < M; m ++){
+            for (int r = 0; r < R; r ++){
+                int index_o = ((n * M + m) * R +r);
+                // print_str("index_o: ");
+                // print_dec((unsigned int)index_o);
+                // print_str("\n");
+                for (int s = 0; s < S; s ++){
+                    int index_i = n * S + s;
+                    int index_w = ((n * M + m) * R + r) * S + s; 
+                    // print_str("index_i: ");
+                    // print_dec((unsigned int)index_i);
+                    // print_str("\n");
+                    // print_str("index_w: ");
+                    // print_dec((unsigned int)index_w);
+                    // print_str("\n");
+                    *(output_data + index_o) += *(input_data + index_i) * *(weight_data + index_w);
+                }
+            }
+        }
+    }
 
 }
 
@@ -356,7 +391,7 @@ void dnn_mmap(void)
 	//--------- software version ---------
 
 	// conv2 
-	LENET_CONV2_SOFT();
+	//LENET_CONV2_SOFT();
 
 	// fc2
 	LENET_FC2_SOFT();
