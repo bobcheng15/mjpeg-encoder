@@ -100,18 +100,18 @@ void soft_fc(int *input_shape, int *weight_shape, int *output_shape, volatile in
         for (int m = 0; m < M; m ++){
             for (int r = 0; r < R; r ++){
                 int index_o = ((n * M + m) * R +r);
-                // print_str("index_o: ");
-                // print_dec((unsigned int)index_o);
-                // print_str("\n");
+                print_str("index_o: ");
+                print_dec((unsigned int)index_o);
+                print_str("\n");
                 for (int s = 0; s < S; s ++){
                     int index_i = n * S + s;
                     int index_w = ((n * M + m) * R + r) * S + s; 
-                    // print_str("index_i: ");
-                    // print_dec((unsigned int)index_i);
-                    // print_str("\n");
-                    // print_str("index_w: ");
-                    // print_dec((unsigned int)index_w);
-                    // print_str("\n");
+                    print_str("index_i: ");
+                    print_dec((unsigned int)index_i);
+                    print_str("\n");
+                    print_str("index_w: ");
+                    print_dec((unsigned int)index_w);
+                    print_str("\n");
                     *(output_data + index_o) += *(input_data + index_i) * *(weight_data + index_w);
                 }
             }
@@ -135,9 +135,27 @@ void unfold(int *input_shape, int *weight_shape, int *output_shape, volatile int
 	int R = weight_shape[2];
 	int S = weight_shape[3];
 
-	for(int i=0; i< output_shape[0]*output_shape[1]*output_shape[2]*output_shape[3]; i++){
-		*(output_data + i) = -1;
-	}
+	for (int b = 0; b < N; b ++){
+        for (int c = 0; c < C; c ++){
+            int row_num = 0;
+            for (int i = 0; i < H - R + 1; i ++){
+                for (int j = 0; j < W - R + 1; j ++){
+                    int col_index = 0;
+                    for (int k = 0; k < R; k ++){
+                        for (int l = 0; l < R; l ++){
+                            int index_o = ((b * output_shape[1] + c) * output_shape[2] + row_num) * output_shape[3] + col_index;
+                            int index_i = ((b * C + c) * H + (i + k)) * W + (j + l);
+                            // print_dec(index_o);
+                            // print_str("\n");
+                            *(output_data + index_o) = *(input_data + index_i);
+                            col_index ++;
+                        }
+                    }
+                    row_num ++;
+                }
+            }
+        }
+    }
 }
 
 // Here is how your code connects to your accelerator.
@@ -146,19 +164,19 @@ void hard_conv_mmap(int *input_shape, int *weight_shape, int *output_shape, uint
 	// TODO 4
 	// You have to write the correct data into DNN_MMAP's addresses.
 	// We just write all zeros for a demonstration.
-	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_CONV) = 0;
-	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_N) = 0;
-	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_C) = 0;
-	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_H) = 0;
-	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_W) = 0;
-	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_R) = 0;
-	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_S) = 0;
-	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_M) = 0;
-	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_P) = 0;
-	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_Q) = 0;
-	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_INPUT_OFFSET) = 0;
-	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WEIGHT_OFFSET) = 0;
-	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_OUTPUT_OFFSET) = 0;
+	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_CONV) = 1;
+	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_N) = input_shape[0];
+	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_C) = input_shape[1];
+	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_H) = input_shape[2];
+	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_W) = input_shape[3];
+	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_R) = weight_shape[2];
+	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_S) = weight_shape[3];
+	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_M) = output_shape[1];
+	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_P) = output_shape[2];
+	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_Q) = output_shape[3];
+	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_INPUT_OFFSET) = input_offset;
+	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WEIGHT_OFFSET) = weight_offset;
+	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_OUTPUT_OFFSET) = output_offset;
 
 	// Start the convolution layer
 	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_START) = 1;
@@ -177,18 +195,18 @@ void mmap_hard_fc_mmap(int *input_shape, int *weight_shape, int *output_shape, u
 	// You have to write the correct data into DNN_MMAP's addresses.
 	// We just write all zeros for a demonstration.
 	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_CONV) = 0;
-	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_N) = 0;
-	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_C) = 0;
-	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_H) = 0;
-	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_W) = 0;
-	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_R) = 0;
-	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_S) = 0;
-	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_M) = 0;
-	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_P) = 0;
-	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_Q) = 0;
-	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_INPUT_OFFSET) = 0;
-	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WEIGHT_OFFSET) = 0;
-	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_OUTPUT_OFFSET) = 0;
+	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_N) = input_shape[0];
+	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_C) = input_shape[1];
+	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_H) = input_shape[2];
+	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_W) = input_shape[3];
+	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_R) = weight_shape[2];
+	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_S) = weight_shape[3];
+	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_M) = output_shape[1];
+	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_P) = output_shape[2];
+	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_Q) = output_shape[3];
+	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_INPUT_OFFSET) = input_offset;
+	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WEIGHT_OFFSET) = weight_offset;
+	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_OUTPUT_OFFSET) = output_offset;
 
 	// Start the fully connected layer
 	*(volatile uint32_t *)(DNN_MMAP_BASE + DNN_MMAP_WRITE_START) = 1;
@@ -391,22 +409,22 @@ void dnn_mmap(void)
 	//--------- software version ---------
 
 	// conv2 
-	//LENET_CONV2_SOFT();
+	// LENET_CONV2_SOFT();
 
 	// fc2
-	LENET_FC2_SOFT();
+	// LENET_FC2_SOFT();
 
 	//--------- hardware version ---------
 
 	// conv2 
 	// TODO 5
 	// Uncomment "LENET_CONV2_HARD();" after you finish unfold and hard_conv_mmap
-	// LENET_CONV2_HARD();
+	LENET_CONV2_HARD();
 
 	// fc2
 	// TODO 7
 	// Uncomment "LENET_FC2_HARD();" after you finish hard_fc_mmap
-	// LENET_FC2_HARD();
+	//LENET_FC2_HARD();
 
 }
 
