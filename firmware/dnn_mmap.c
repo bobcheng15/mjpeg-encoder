@@ -100,18 +100,9 @@ void soft_fc(int *input_shape, int *weight_shape, int *output_shape, volatile in
         for (int m = 0; m < M; m ++){
             for (int r = 0; r < R; r ++){
                 int index_o = ((n * M + m) * R +r);
-                print_str("index_o: ");
-                print_dec((unsigned int)index_o);
-                print_str("\n");
                 for (int s = 0; s < S; s ++){
                     int index_i = n * S + s;
                     int index_w = ((n * M + m) * R + r) * S + s; 
-                    print_str("index_i: ");
-                    print_dec((unsigned int)index_i);
-                    print_str("\n");
-                    print_str("index_w: ");
-                    print_dec((unsigned int)index_w);
-                    print_str("\n");
                     *(output_data + index_o) += *(input_data + index_i) * *(weight_data + index_w);
                 }
             }
@@ -145,8 +136,6 @@ void unfold(int *input_shape, int *weight_shape, int *output_shape, volatile int
                         for (int l = 0; l < R; l ++){
                             int index_o = ((b * output_shape[1] + c) * output_shape[2] + row_num) * output_shape[3] + col_index;
                             int index_i = ((b * C + c) * H + (i + k)) * W + (j + l);
-                            // print_dec(index_o);
-                            // print_str("\n");
                             *(output_data + index_o) = *(input_data + index_i);
                             col_index ++;
                         }
@@ -409,10 +398,10 @@ void dnn_mmap(void)
 	//--------- software version ---------
 
 	// conv2 
-	// LENET_CONV2_SOFT();
+	LENET_CONV2_SOFT();
 
 	// fc2
-	// LENET_FC2_SOFT();
+	LENET_FC2_SOFT();
 
 	//--------- hardware version ---------
 
@@ -424,7 +413,7 @@ void dnn_mmap(void)
 	// fc2
 	// TODO 7
 	// Uncomment "LENET_FC2_HARD();" after you finish hard_fc_mmap
-	//LENET_FC2_HARD();
+	LENET_FC2_HARD();
 
 }
 
