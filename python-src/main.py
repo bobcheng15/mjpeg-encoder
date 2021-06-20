@@ -25,11 +25,10 @@ for block in blocks:
 			yuv_pixel = []
 			transfrom_metrix = [[0.257, 0.504, 0.098], [-0.148, -0.291, 0.439], [0.439, -0.368, -0.071]]
 			yuv = np.dot(transfrom_metrix, pixel) + [16, 128, 128]
-			yuv_pixel.append(yuv)
-		yuv_row.append(yuv_pixel)
-	yuv_block.append(yuv_row)
-	yuv_row = []
-yuv_blocks.append(yuv_block)
-yuv_block = []
+			yuv_row.append(yuv)
+		yuv_block.append(yuv_row)
+		yuv_row = []
+	yuv_blocks.append(yuv_block)
+	yuv_block = []
 
 return yuv_blocks
