@@ -16,4 +16,5 @@ for i in range(block_height):
 	blocks.append(temp)
 	temp = []
 
+
 print(np.shape(blocks))
