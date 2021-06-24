@@ -27,9 +27,6 @@ uint32_t hard_mulhsu(uint32_t a, uint32_t b);
 uint32_t hard_mulhu(uint32_t a, uint32_t b);
 void multest(void);
 
-//dnn_pcpi.c
-uint32_t hard_dnn_pcpi(uint32_t a, uint32_t b);
-
 // stats.c
 void stats(void);
 uint32_t tick(void);
