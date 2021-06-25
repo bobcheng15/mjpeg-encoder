@@ -1,9 +1,10 @@
 import numpy as np
-import cv2 
+import cv2
 from PIL import Image
 import math
 import sys
 import progressbar
+import numba
 def computeDCTComponent(channelBlock, row_index, col_index):
     result = 0
     for i in range(0, 8):
@@ -17,7 +18,6 @@ def computeDCTComponent(channelBlock, row_index, col_index):
         result = result * 1 / math.sqrt(2)
     result = result / 4
     return result
-
 def TwoDDCT(inputMatrix, num_coef):
     coef_range = int(math.sqrt(num_coef))
     result = np.zeros((8, 8, 3))
@@ -39,7 +39,6 @@ def computeInvDCTComponent(channelBlock, row_index, col_index):
             result = result + tmp
     result = result / 4
     return int(result)
-
 def InvTwoDDCT(inputMatrix):
     result = np.zeros((8, 8, 3))
     for channel in range(0, 3):
@@ -57,15 +56,19 @@ def MSE(original, processed):
 
 def PSNR(original, processed):
     mse = MSE(original, processed)
-    result = 20 * np.log10(255/math.sqrt(mse)) 
-    return result               
+    result = 20 * np.log10(255/math.sqrt(mse))
+    return result
 
-                
+
 
 if __name__ == "__main__":
     image = Image.open('input.jpeg')
     img_yuv = image.convert('YCbCr')
     img = np.array(img_yuv)
+    print("Dumping yuv image")
+    print(img)
+    np.savetxt("yuv_input.csv", img.flatten(), delimiter=",", fmt='%d')
+    print(img.shape)
     result = np.zeros((880, 1400, 3))
     invDCTResult = np.zeros((880, 1400, 3))
     invResult = np.zeros((877, 1400, 3))
@@ -73,7 +76,7 @@ if __name__ == "__main__":
     print("Running DCT on the Original Image")
     bar = progressbar.ProgressBar(maxval=19250, \
     widgets=[progressbar.Bar('=', '[', ']'), 'DCT', progressbar.Percentage()])
-    bar.start()   
+    bar.start()
     for i in range(0, 880, 8):
         for j in range(0, 1400, 8):
             count = count + 1
@@ -84,15 +87,18 @@ if __name__ == "__main__":
             else:
                 inputMatrix[0:5, 0:8, :] = img[i:i+5, j:j+8, :]
                 inputMatrix[5:8, 0:8, :] = np.zeros((3, 8, 3))
-            
+
 
             result[i:i+8, j:j+8, :] = TwoDDCT(inputMatrix, int(sys.argv[1]))
     bar.finish()
     count = 0
+    print(result)
+    print("Dumping DCT result")
+    np.savetxt("DCT_output" + sys.argv[1] + ".csv", result.flatten(), delimiter=",", fmt='%f')
     print("Running IDCT")
     invbar = progressbar.ProgressBar(maxval=19250, \
     widgets=[progressbar.Bar('=', '[', ']'), 'IDCT', progressbar.Percentage()])
-    invbar.start()   
+    invbar.start()
     for i in range(0, 880, 8):
         for j in range(0, 1400, 8):
             count = count + 1
@@ -105,13 +111,5 @@ if __name__ == "__main__":
     resultImg = Image.fromarray(invResult.astype(np.uint8), mode = 'YCbCr')
     resultImg = resultImg.convert('RGB')
     print("PSNR: " + str(PSNR(img, invResult)))
-    #resultImg.show()          
+    #resultImg.show()
     resultImg.save("DCT_result_"+ sys.argv[1] +".png")
-
- 
-
-
-
-
-
-
