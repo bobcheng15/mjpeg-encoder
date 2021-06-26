@@ -57,3 +57,25 @@ int cosine(int radian){
     int converted_rad = (converted_rad > 8)? 16 - converted_rad: converted_rad;
     return invert * LUT[converted_rad];
 }
+
+// input_shape = {90, 160, 64, 3}
+// output_shape = {90, 160, 3, 64}
+void unfold(int *input_shape, int *output_shape, volatile int8_t* input_data, volatile int8_t* output_data)
+{
+	int height = input_shape[0];
+	int width = input_shape[1];
+	int num_pixel = input_shape[2];
+	int yuv = input_shape[3];
+
+	for (int h = 0; b < height; b ++){
+        for (int w = 0; c < width; c ++){
+			for (int m=0; m < num_pixel; m++{
+				for (int n=0, n<yuv; n++){
+					int index_o = (((h)*width + w)*num_pixel*yuv + n*num_pixel + m;
+					int index_i = ((h)*width + w)*num_pixel*yuv + m*yuv + n;
+					*(output_data + index_o) = *(input_data + index_i);
+				}
+			}
+        }
+    }
+}
