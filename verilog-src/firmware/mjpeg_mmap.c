@@ -16,15 +16,15 @@
 *   pixel: the pointer to the array that stores the 8 * 8 pixel block
 *   row_index: the row index of the block in the original image
 *   column_index: the column index of the block in the original image
-* Returns: 
+* Returns:
 *   result: the coefficient of the frequency componenet
 */
 
-float DCT(int * pixel, int row_index, int column_index){
+int DCT(int * pixel, int row_index, int column_index){
     float result = 0;
     for (int i = 0; i < 8; i ++){
         for (int j = 0; j < 8; j ++){
-            float tmp = cosine(row_index / 16 * (2 * i + 1)) * cosine(column_index / 16 * (2 * j + 1));
+            float tmp = cosine(row_index * (2 * i + 1)) * cosine(column_index * (2 * j + 1));
             tmp = tmp * pixel[i * 8 + j];
             result = result + tmp;
         }
@@ -37,11 +37,23 @@ float DCT(int * pixel, int row_index, int column_index){
 
 /* Function: cosine
 * Parameters:
-*   radian: the input radian to the cosine function ()
-*   
-*
+*   radian: the coefficient of PI times 16 of the input radian to the cosine function
 */
-float cosine(float radian){
-
-
+int cosine(int radian){
+    int LUT[8] = [
+        1000,
+        981,
+        924,
+        831,
+        707,
+        556,
+        383,
+        195,
+        0
+    ];
+    int converted_rad = radian % 32;
+    int converted_rad = (converted_rad > 16)? 32 - converted_rad: converted_rad;
+    int invert = (converted_rad > 8)? -1: 1;
+    int converted_rad = (converted_rad > 8)? 16 - converted_rad: converted_rad;
+    return invert * LUT[converted_rad];
 }
