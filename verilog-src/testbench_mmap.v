@@ -258,117 +258,117 @@ module picorv32_wrapper (
 	assign memory_write = mem_la_write;
 	assign memory_wstrb = FAST_MEMORY ? mem_la_wstrb : mem_wstrb;
 
-	//Port1: MMAP memory access
-	always @(posedge clk) begin
-		mmap_mem_ready_0 <= mmap_mem_valid_0;
-		mmap_mem_rdata_0 <= 0;
-		if (mmap_mem_valid_0 && !mmap_mem_write_0 && (mmap_mem_addr_0 >> 2) < `MEM_SIZE) begin
-			`ifdef SYNTHESIS
-				case(mmap_mem_addr_0[1:0])
-					2'd0: mmap_mem_rdata_0 <= #mem_delay memory[mmap_mem_addr_0 >> 2];
-					2'd1: mmap_mem_rdata_0 <= #mem_delay {memory[(mmap_mem_addr_0 >> 2)+1][7:0], memory[mmap_mem_addr_0 >> 2][31:8]};
-					2'd2: mmap_mem_rdata_0 <= #mem_delay {memory[(mmap_mem_addr_0 >> 2)+1][15:0], memory[mmap_mem_addr_0 >> 2][31:16]};
-					2'd3: mmap_mem_rdata_0 <= #mem_delay {memory[(mmap_mem_addr_0 >> 2)+1][23:0], memory[mmap_mem_addr_0 >> 2][31:24]};
-				endcase
-			`else
-				case(mmap_mem_addr_0[1:0])
-					2'd0: mmap_mem_rdata_0 <= memory[mmap_mem_addr_0 >> 2];
-					2'd1: mmap_mem_rdata_0 <= {memory[(mmap_mem_addr_0 >> 2)+1][7:0], memory[mmap_mem_addr_0 >> 2][31:8]};
-					2'd2: mmap_mem_rdata_0 <= {memory[(mmap_mem_addr_0 >> 2)+1][15:0], memory[mmap_mem_addr_0 >> 2][31:16]};
-					2'd3: mmap_mem_rdata_0 <= {memory[(mmap_mem_addr_0 >> 2)+1][23:0], memory[mmap_mem_addr_0 >> 2][31:24]};
-				endcase
-			`endif
-		end
-		if (mmap_mem_valid_0 && |mmap_mem_write_0 && (mmap_mem_addr_0 >> 2) < `MEM_SIZE) begin
-			case(mmap_mem_addr_0[1:0])
-				2'd0: memory[mmap_mem_addr_0 >> 2] <= mmap_mem_wdata_0;
-				2'd1: {memory[(mmap_mem_addr_0 >> 2)+1][7:0], memory[mmap_mem_addr_0 >> 2][31:8]} <= mmap_mem_wdata_0;
-				2'd2: {memory[(mmap_mem_addr_0 >> 2)+1][15:0], memory[mmap_mem_addr_0 >> 2][31:16]} <= mmap_mem_wdata_0;
-				2'd3: {memory[(mmap_mem_addr_0 >> 2)+1][23:0], memory[mmap_mem_addr_0 >> 2][31:24]} <= mmap_mem_wdata_0;
-			endcase
-		end
-
-		if ((mmap_mem_addr_0 >> 2) > `MEM_SIZE) begin
-			$display("MMAP OUT-OF-BOUNDS MEMORY ACCESS TO %08x", mmap_mem_addr_0);
-			$display("mmap_mem_addr_0 = %b", mmap_mem_addr_0);
-			$display("mmap_mem_wdata_0 = %b", mmap_mem_wdata_0);
-			$finish;
-		end
-    end
-
-	always @(posedge clk) begin
-		mmap_mem_ready_1 <= mmap_mem_valid_1;
-		mmap_mem_rdata_1 <= 0;
-		if (mmap_mem_valid_1 && !mmap_mem_write_1 && (mmap_mem_addr_1 >> 2) < `MEM_SIZE) begin
-			`ifdef SYNTHESIS
-				case(mmap_mem_addr_1[1:0])
-					2'd0: mmap_mem_rdata_1 <= #mem_delay memory[mmap_mem_addr_1 >> 2];
-					2'd1: mmap_mem_rdata_1 <= #mem_delay {memory[(mmap_mem_addr_1 >> 2)+1][7:0], memory[mmap_mem_addr_1 >> 2][31:8]};
-					2'd2: mmap_mem_rdata_1 <= #mem_delay {memory[(mmap_mem_addr_1 >> 2)+1][15:0], memory[mmap_mem_addr_1 >> 2][31:16]};
-					2'd3: mmap_mem_rdata_1 <= #mem_delay {memory[(mmap_mem_addr_1 >> 2)+1][23:0], memory[mmap_mem_addr_1 >> 2][31:24]};
-				endcase
-			`else
-				case(mmap_mem_addr_1[1:0])
-					2'd0: mmap_mem_rdata_1 <= memory[mmap_mem_addr_1 >> 2];
-					2'd1: mmap_mem_rdata_1 <= {memory[(mmap_mem_addr_1 >> 2)+1][7:0], memory[mmap_mem_addr_1 >> 2][31:8]};
-					2'd2: mmap_mem_rdata_1 <= {memory[(mmap_mem_addr_1 >> 2)+1][15:0], memory[mmap_mem_addr_1 >> 2][31:16]};
-					2'd3: mmap_mem_rdata_1 <= {memory[(mmap_mem_addr_1 >> 2)+1][23:0], memory[mmap_mem_addr_1 >> 2][31:24]};
-				endcase
-			`endif
-		end
-		if (mmap_mem_valid_1 && |mmap_mem_write_1 && (mmap_mem_addr_1 >> 2) < `MEM_SIZE) begin
-			case(mmap_mem_addr_1[1:0])
-				2'd0: memory[mmap_mem_addr_1 >> 2] <= mmap_mem_wdata_1;
-				2'd1: {memory[(mmap_mem_addr_1 >> 2)+1][7:0], memory[mmap_mem_addr_1 >> 2][31:8]} <= mmap_mem_wdata_1;
-				2'd2: {memory[(mmap_mem_addr_1 >> 2)+1][15:0], memory[mmap_mem_addr_1 >> 2][31:16]} <= mmap_mem_wdata_1;
-				2'd3: {memory[(mmap_mem_addr_1 >> 2)+1][23:0], memory[mmap_mem_addr_1 >> 2][31:24]} <= mmap_mem_wdata_1;
-			endcase
-		end
-
-		if ((mmap_mem_addr_1 >> 2) > `MEM_SIZE) begin
-			$display("MMAP OUT-OF-BOUNDS MEMORY ACCESS TO %08x", mmap_mem_addr_1);
-			$display("mmap_mem_addr_1 = %b", mmap_mem_addr_1);
-			$display("mmap_mem_wdata_1 = %b", mmap_mem_wdata_1);
-			$finish;
-		end
-    end
-
-	always @(posedge clk) begin
-		mmap_mem_ready_2 <= mmap_mem_valid_2;
-		mmap_mem_rdata_2 <= 0;
-		if (mmap_mem_valid_2 && !mmap_mem_write_2 && (mmap_mem_addr_2 >> 2) < `MEM_SIZE) begin
-			`ifdef SYNTHESIS
-				case(mmap_mem_addr_2[1:0])
-					2'd0: mmap_mem_rdata_2 <= #mem_delay memory[mmap_mem_addr_2 >> 2];
-					2'd1: mmap_mem_rdata_2 <= #mem_delay {memory[(mmap_mem_addr_2 >> 2)+1][7:0], memory[mmap_mem_addr_2 >> 2][31:8]};
-					2'd2: mmap_mem_rdata_2 <= #mem_delay {memory[(mmap_mem_addr_2 >> 2)+1][15:0], memory[mmap_mem_addr_2 >> 2][31:16]};
-					2'd3: mmap_mem_rdata_2 <= #mem_delay {memory[(mmap_mem_addr_2 >> 2)+1][23:0], memory[mmap_mem_addr_2 >> 2][31:24]};
-				endcase
-			`else
-				case(mmap_mem_addr_2[1:0])
-					2'd0: mmap_mem_rdata_2 <= memory[mmap_mem_addr_2 >> 2];
-					2'd1: mmap_mem_rdata_2 <= {memory[(mmap_mem_addr_2 >> 2)+1][7:0], memory[mmap_mem_addr_2 >> 2][31:8]};
-					2'd2: mmap_mem_rdata_2 <= {memory[(mmap_mem_addr_2 >> 2)+1][15:0], memory[mmap_mem_addr_2 >> 2][31:16]};
-					2'd3: mmap_mem_rdata_2 <= {memory[(mmap_mem_addr_2 >> 2)+1][23:0], memory[mmap_mem_addr_2 >> 2][31:24]};
-				endcase
-			`endif
-		end
-		if (mmap_mem_valid_2 && |mmap_mem_write_2 && (mmap_mem_addr_2 >> 2) < `MEM_SIZE) begin
-			case(mmap_mem_addr_2[1:0])
-				2'd0: memory[mmap_mem_addr_2 >> 2] <= mmap_mem_wdata_2;
-				2'd1: {memory[(mmap_mem_addr_2 >> 2)+1][7:0], memory[mmap_mem_addr_2 >> 2][31:8]} <= mmap_mem_wdata_2;
-				2'd2: {memory[(mmap_mem_addr_2 >> 2)+1][15:0], memory[mmap_mem_addr_2 >> 2][31:16]} <= mmap_mem_wdata_2;
-				2'd3: {memory[(mmap_mem_addr_2 >> 2)+1][23:0], memory[mmap_mem_addr_2 >> 2][31:24]} <= mmap_mem_wdata_2;
-			endcase
-		end
-
-		if ((mmap_mem_addr_2 >> 2) > `MEM_SIZE) begin
-			$display("MMAP OUT-OF-BOUNDS MEMORY ACCESS TO %08x", mmap_mem_addr_2);
-			$display("mmap_mem_addr_2 = %b", mmap_mem_addr_2);
-			$display("mmap_mem_wdata_2 = %b", mmap_mem_wdata_2);
-			$finish;
-		end
-    end
+	// //Port1: MMAP memory access
+	// always @(posedge clk) begin
+	// 	mmap_mem_ready_0 <= mmap_mem_valid_0;
+	// 	mmap_mem_rdata_0 <= 0;
+	// 	if (mmap_mem_valid_0 && !mmap_mem_write_0 && (mmap_mem_addr_0 >> 2) < `MEM_SIZE) begin
+	// 		`ifdef SYNTHESIS
+	// 			case(mmap_mem_addr_0[1:0])
+	// 				2'd0: mmap_mem_rdata_0 <= #mem_delay memory[mmap_mem_addr_0 >> 2];
+	// 				2'd1: mmap_mem_rdata_0 <= #mem_delay {memory[(mmap_mem_addr_0 >> 2)+1][7:0], memory[mmap_mem_addr_0 >> 2][31:8]};
+	// 				2'd2: mmap_mem_rdata_0 <= #mem_delay {memory[(mmap_mem_addr_0 >> 2)+1][15:0], memory[mmap_mem_addr_0 >> 2][31:16]};
+	// 				2'd3: mmap_mem_rdata_0 <= #mem_delay {memory[(mmap_mem_addr_0 >> 2)+1][23:0], memory[mmap_mem_addr_0 >> 2][31:24]};
+	// 			endcase
+	// 		`else
+	// 			case(mmap_mem_addr_0[1:0])
+	// 				2'd0: mmap_mem_rdata_0 <= memory[mmap_mem_addr_0 >> 2];
+	// 				2'd1: mmap_mem_rdata_0 <= {memory[(mmap_mem_addr_0 >> 2)+1][7:0], memory[mmap_mem_addr_0 >> 2][31:8]};
+	// 				2'd2: mmap_mem_rdata_0 <= {memory[(mmap_mem_addr_0 >> 2)+1][15:0], memory[mmap_mem_addr_0 >> 2][31:16]};
+	// 				2'd3: mmap_mem_rdata_0 <= {memory[(mmap_mem_addr_0 >> 2)+1][23:0], memory[mmap_mem_addr_0 >> 2][31:24]};
+	// 			endcase
+	// 		`endif
+	// 	end
+	// 	if (mmap_mem_valid_0 && |mmap_mem_write_0 && (mmap_mem_addr_0 >> 2) < `MEM_SIZE) begin
+	// 		case(mmap_mem_addr_0[1:0])
+	// 			2'd0: memory[mmap_mem_addr_0 >> 2] <= mmap_mem_wdata_0;
+	// 			2'd1: {memory[(mmap_mem_addr_0 >> 2)+1][7:0], memory[mmap_mem_addr_0 >> 2][31:8]} <= mmap_mem_wdata_0;
+	// 			2'd2: {memory[(mmap_mem_addr_0 >> 2)+1][15:0], memory[mmap_mem_addr_0 >> 2][31:16]} <= mmap_mem_wdata_0;
+	// 			2'd3: {memory[(mmap_mem_addr_0 >> 2)+1][23:0], memory[mmap_mem_addr_0 >> 2][31:24]} <= mmap_mem_wdata_0;
+	// 		endcase
+	// 	end
+	//
+	// 	if ((mmap_mem_addr_0 >> 2) > `MEM_SIZE) begin
+	// 		$display("MMAP OUT-OF-BOUNDS MEMORY ACCESS TO %08x", mmap_mem_addr_0);
+	// 		$display("mmap_mem_addr_0 = %b", mmap_mem_addr_0);
+	// 		$display("mmap_mem_wdata_0 = %b", mmap_mem_wdata_0);
+	// 		$finish;
+	// 	end
+    // end
+	//
+	// always @(posedge clk) begin
+	// 	mmap_mem_ready_1 <= mmap_mem_valid_1;
+	// 	mmap_mem_rdata_1 <= 0;
+	// 	if (mmap_mem_valid_1 && !mmap_mem_write_1 && (mmap_mem_addr_1 >> 2) < `MEM_SIZE) begin
+	// 		`ifdef SYNTHESIS
+	// 			case(mmap_mem_addr_1[1:0])
+	// 				2'd0: mmap_mem_rdata_1 <= #mem_delay memory[mmap_mem_addr_1 >> 2];
+	// 				2'd1: mmap_mem_rdata_1 <= #mem_delay {memory[(mmap_mem_addr_1 >> 2)+1][7:0], memory[mmap_mem_addr_1 >> 2][31:8]};
+	// 				2'd2: mmap_mem_rdata_1 <= #mem_delay {memory[(mmap_mem_addr_1 >> 2)+1][15:0], memory[mmap_mem_addr_1 >> 2][31:16]};
+	// 				2'd3: mmap_mem_rdata_1 <= #mem_delay {memory[(mmap_mem_addr_1 >> 2)+1][23:0], memory[mmap_mem_addr_1 >> 2][31:24]};
+	// 			endcase
+	// 		`else
+	// 			case(mmap_mem_addr_1[1:0])
+	// 				2'd0: mmap_mem_rdata_1 <= memory[mmap_mem_addr_1 >> 2];
+	// 				2'd1: mmap_mem_rdata_1 <= {memory[(mmap_mem_addr_1 >> 2)+1][7:0], memory[mmap_mem_addr_1 >> 2][31:8]};
+	// 				2'd2: mmap_mem_rdata_1 <= {memory[(mmap_mem_addr_1 >> 2)+1][15:0], memory[mmap_mem_addr_1 >> 2][31:16]};
+	// 				2'd3: mmap_mem_rdata_1 <= {memory[(mmap_mem_addr_1 >> 2)+1][23:0], memory[mmap_mem_addr_1 >> 2][31:24]};
+	// 			endcase
+	// 		`endif
+	// 	end
+	// 	if (mmap_mem_valid_1 && |mmap_mem_write_1 && (mmap_mem_addr_1 >> 2) < `MEM_SIZE) begin
+	// 		case(mmap_mem_addr_1[1:0])
+	// 			2'd0: memory[mmap_mem_addr_1 >> 2] <= mmap_mem_wdata_1;
+	// 			2'd1: {memory[(mmap_mem_addr_1 >> 2)+1][7:0], memory[mmap_mem_addr_1 >> 2][31:8]} <= mmap_mem_wdata_1;
+	// 			2'd2: {memory[(mmap_mem_addr_1 >> 2)+1][15:0], memory[mmap_mem_addr_1 >> 2][31:16]} <= mmap_mem_wdata_1;
+	// 			2'd3: {memory[(mmap_mem_addr_1 >> 2)+1][23:0], memory[mmap_mem_addr_1 >> 2][31:24]} <= mmap_mem_wdata_1;
+	// 		endcase
+	// 	end
+	//
+	// 	if ((mmap_mem_addr_1 >> 2) > `MEM_SIZE) begin
+	// 		$display("MMAP OUT-OF-BOUNDS MEMORY ACCESS TO %08x", mmap_mem_addr_1);
+	// 		$display("mmap_mem_addr_1 = %b", mmap_mem_addr_1);
+	// 		$display("mmap_mem_wdata_1 = %b", mmap_mem_wdata_1);
+	// 		$finish;
+	// 	end
+    // end
+	//
+	// always @(posedge clk) begin
+	// 	mmap_mem_ready_2 <= mmap_mem_valid_2;
+	// 	mmap_mem_rdata_2 <= 0;
+	// 	if (mmap_mem_valid_2 && !mmap_mem_write_2 && (mmap_mem_addr_2 >> 2) < `MEM_SIZE) begin
+	// 		`ifdef SYNTHESIS
+	// 			case(mmap_mem_addr_2[1:0])
+	// 				2'd0: mmap_mem_rdata_2 <= #mem_delay memory[mmap_mem_addr_2 >> 2];
+	// 				2'd1: mmap_mem_rdata_2 <= #mem_delay {memory[(mmap_mem_addr_2 >> 2)+1][7:0], memory[mmap_mem_addr_2 >> 2][31:8]};
+	// 				2'd2: mmap_mem_rdata_2 <= #mem_delay {memory[(mmap_mem_addr_2 >> 2)+1][15:0], memory[mmap_mem_addr_2 >> 2][31:16]};
+	// 				2'd3: mmap_mem_rdata_2 <= #mem_delay {memory[(mmap_mem_addr_2 >> 2)+1][23:0], memory[mmap_mem_addr_2 >> 2][31:24]};
+	// 			endcase
+	// 		`else
+	// 			case(mmap_mem_addr_2[1:0])
+	// 				2'd0: mmap_mem_rdata_2 <= memory[mmap_mem_addr_2 >> 2];
+	// 				2'd1: mmap_mem_rdata_2 <= {memory[(mmap_mem_addr_2 >> 2)+1][7:0], memory[mmap_mem_addr_2 >> 2][31:8]};
+	// 				2'd2: mmap_mem_rdata_2 <= {memory[(mmap_mem_addr_2 >> 2)+1][15:0], memory[mmap_mem_addr_2 >> 2][31:16]};
+	// 				2'd3: mmap_mem_rdata_2 <= {memory[(mmap_mem_addr_2 >> 2)+1][23:0], memory[mmap_mem_addr_2 >> 2][31:24]};
+	// 			endcase
+	// 		`endif
+	// 	end
+	// 	if (mmap_mem_valid_2 && |mmap_mem_write_2 && (mmap_mem_addr_2 >> 2) < `MEM_SIZE) begin
+	// 		case(mmap_mem_addr_2[1:0])
+	// 			2'd0: memory[mmap_mem_addr_2 >> 2] <= mmap_mem_wdata_2;
+	// 			2'd1: {memory[(mmap_mem_addr_2 >> 2)+1][7:0], memory[mmap_mem_addr_2 >> 2][31:8]} <= mmap_mem_wdata_2;
+	// 			2'd2: {memory[(mmap_mem_addr_2 >> 2)+1][15:0], memory[mmap_mem_addr_2 >> 2][31:16]} <= mmap_mem_wdata_2;
+	// 			2'd3: {memory[(mmap_mem_addr_2 >> 2)+1][23:0], memory[mmap_mem_addr_2 >> 2][31:24]} <= mmap_mem_wdata_2;
+	// 		endcase
+	// 	end
+	//
+	// 	if ((mmap_mem_addr_2 >> 2) > `MEM_SIZE) begin
+	// 		$display("MMAP OUT-OF-BOUNDS MEMORY ACCESS TO %08x", mmap_mem_addr_2);
+	// 		$display("mmap_mem_addr_2 = %b", mmap_mem_addr_2);
+	// 		$display("mmap_mem_wdata_2 = %b", mmap_mem_wdata_2);
+	// 		$finish;
+	// 	end
+    // end
 
 	// Port2: CPU memory access
 	generate if (FAST_MEMORY) begin

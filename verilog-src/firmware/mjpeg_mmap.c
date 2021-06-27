@@ -16,7 +16,7 @@
 *   radian: the coefficient of PI times 16 of the input radian to the cosine function
 */
 int cosine(int radian){
-    int lut[9] = {1000, 981, 924, 831, 707, 556, 383, 195, 0};
+    int lut[9] = {100, 98, 92, 83, 71, 56, 38, 20, 0};
     int converted_rad = radian % 32;
     converted_rad = (converted_rad > 16)? 32 - converted_rad: converted_rad;
     int invert = (converted_rad > 8)? -1: 1;
@@ -38,7 +38,7 @@ int cosine(int radian){
 *   result: the coefficient of the frequency componenet
 */
 
-void DCT(volatile int8_t * input_data, volatile int32_t * output_data , int * input_shape, int num_coef){
+void DCT(volatile uint8_t * input_data, volatile int32_t * output_data , int * input_shape, int num_coef){
     int height = input_shape[0];
 	int width = input_shape[1];
 	int yuv = input_shape[3];
@@ -46,10 +46,6 @@ void DCT(volatile int8_t * input_data, volatile int32_t * output_data , int * in
     for (int h = 0; h < height; h ++){
         for (int w = 0; w < width; w ++){
             for (int c = 0; c < yuv; c ++){
-                print_dec(h);
-                print_dec(w);
-                print_dec(c);
-                print_str("\n");
                 for (int row_index = 0; row_index < num_coef; row_index ++){
                     for (int column_index  = 0; column_index < num_coef; column_index ++){
                         int result = 0;
@@ -73,8 +69,6 @@ void DCT(volatile int8_t * input_data, volatile int32_t * output_data , int * in
             }
         }
     }
-    // result = (row_index == 0)? result / sqrt(2): result;
-    // result = (column_index == 0)? result / sqrt(2): result;
 }
 
 /* Function: unfold
@@ -129,10 +123,8 @@ void MJPEG_SOFT(void){
     int start, stop;
     int input_shape[4] = {4, 4, 64, 3};
     // setup pointer to the input and output data addresses
-    volatile int8_t* input_data = RAW_IMAGE_OFFSET;
+    volatile uint8_t* input_data = RAW_IMAGE_OFFSET;
     volatile int32_t* output_data = SOFT_MJPEG_OUTPUT_OFFSET;
-    print_dec(*(input_data + 3));
-    print_str("\n");
     // performs DCT
     start = tick();
     DCT(input_data, output_data, input_shape, 2);
