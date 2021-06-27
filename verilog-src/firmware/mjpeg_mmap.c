@@ -59,7 +59,7 @@ void DCT(volatile int8_t * input_data, volatile int32_t * output_data , int * in
                                 int index_i = ((h)*width + w)*num_pixel*yuv + (i * 8 + j) * yuv + c;
                                 print_dec(index_i);
                                 print_str("\n");
-                                print_sign(*(input_data + index_i));
+                                print_dec(*(input_data + index_i));
                                 print_str("\n");
                                 tmp = tmp * *(input_data + index_i);
                                 result = result + tmp;
@@ -89,7 +89,7 @@ void DCT(volatile int8_t * input_data, volatile int32_t * output_data , int * in
 *   input_shape = {90, 160, 64, 3}
 *   output_shape = {90, 160, 3, 64}
 */
-void unfold(int *input_shape, volatile int8_t* input_data, volatile int8_t* output_data)
+void unfold(int *input_shape, volatile uint8_t* input_data, volatile uint8_t* output_data)
 {
 	int height = input_shape[0];
 	int width = input_shape[1];
@@ -98,12 +98,28 @@ void unfold(int *input_shape, volatile int8_t* input_data, volatile int8_t* outp
 
 	for (int h = 0; h < height; h ++){
         for (int w = 0; w < width; w ++){
-			for (int m=0; m < num_pixel; m++){
-				for (int n=0; n<yuv; n++){
+			for (int n=0; n<yuv; n++){
+                int start, stop;
+                start = tick();
+				for (int m=0; m < num_pixel; m++){
 					int index_o = ((h)*width + w)*num_pixel*yuv + n*num_pixel + m;
 					int index_i = ((h)*width + w)*num_pixel*yuv + m*yuv + n;
 					*(output_data + index_o) = *(input_data + index_i);
 				}
+                stop = tick();
+                for (int m=0; m < num_pixel; m++){
+					int index_o = ((h)*width + w)*num_pixel*yuv + n*num_pixel + m;
+                    int index_i = ((h)*width + w)*num_pixel*yuv + m*yuv + n;
+                    print_dec(index_i);
+                    print_str(": ");
+					print_dec(index_o);
+                    print_str(": ");
+                    print_dec(*(output_data + index_o));
+                    print_str("\n");
+				}
+                print_str("\nThe time usage: ");
+                print_dec(stop - start);
+                print_str("\n");
 			}
         }
     }
@@ -136,6 +152,8 @@ void MJPEG_SOFT(void){
 }
 
 void mjpeg_mmap(void){
+    int input_shape[4] = {4, 4, 64, 3};
     // software version
-    MJPEG_SOFT();
+    // MJPEG_SOFT();
+    unfold(input_shape, RAW_IMAGE_OFFSET, UNFOLDED_IMAGE_OFFSET);
 }
