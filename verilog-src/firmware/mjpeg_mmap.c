@@ -71,7 +71,7 @@ void unfold(int *input_shape, int *output_shape, volatile int8_t* input_data, vo
         for (int w = 0; c < width; c ++){
 			for (int m=0; m < num_pixel; m++){
 				for (int n=0, n<yuv; n++){
-					int index_o = (((h)*width + w)*num_pixel*yuv + n*num_pixel + m;
+					int index_o = ((h)*width + w)*num_pixel*yuv + n*num_pixel + m;
 					int index_i = ((h)*width + w)*num_pixel*yuv + m*yuv + n;
 					*(output_data + index_o) = *(input_data + index_i);
 				}
