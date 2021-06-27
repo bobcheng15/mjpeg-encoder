@@ -1,22 +1,14 @@
 `timescale 1 ns / 1 ps
 
 `define FSDB_FILE    "testbench.fsdb"
-`define CONV_INPUT_SOURCE   "conv2_input.csv"
-`define CONV_WEIGHT_SOURCE 	"weight_conv.csv"
-`define FC_INPUT_SOURCE   	"input_fc.csv"
-`define FC_WEIGHT_SOURCE   	"weight_fc.csv"
+`define RAW_INPUT_SOURCE   "../data/yuv_input.csv"
 
-`define CONV_IMAGE_OFFSET 			65536	//0x00010000
-`define UNFOLDED_CONV_IMAGE_OFFSET	131072	//0x00020000
+`define RAW_IMAGE_OFFSET 			65536	//0x00010000
+`define UNFOLDED_IMAGE_OFFSET		131072	//0x00020000
 
-`define CONV_WEIGHT_OFFSET			196608	//0x00030000
-`define SOFT_CONV_OUTPUT_OFFSET		262144	//0x00040000
-`define HARD_CONV_OUTPUT_OFFSET		327680	//0x00050000
 
-`define FC_IMAGE_OFFSET 			393216	//0x00060000
-`define FC_WEIGHT_OFFSET			458752	//0x00070000
-`define SOFT_FC_OUTPUT_OFFSET		524288	//0x00080000
-`define HARD_FC_OUTPUT_OFFSET		589824	//0x00090000
+`define SOFT_MJPEG_OUTPUT_OFFSET	524288	//0x00080000
+`define HARD_MJPEG_OUTPUT_OFFSET	589824	//0x00090000
 
 `define IMG_OFFSET   16384 //0x00010000
 `define MEM_SIZE     3145728 //0x00C00000
@@ -61,11 +53,11 @@ module testbench ();
 			$display("Finished writing testbench.trace.");
 		end
 	end
-	
-	integer dnn_in;
+
+	integer mjpeg_in;
 	integer i, j, k, cc;
 	integer debug;
-	
+
 	initial begin
 		for(i=0; i<`MEM_SIZE;i=i+1) begin
 			top.memory[i] = 32'b0;
@@ -77,62 +69,35 @@ module testbench ();
 		end else begin
 			debug = 0;
 		end
-		
-		dnn_in = $fopen(`CONV_INPUT_SOURCE, "r");
+
+		mjpeg_in = $fopen(`RAW_INPUT_SOURCE, "r");
 		i = 0;
-		while($fscanf(dnn_in,"%e", cc)!= -1) begin
-			case(i % 4) 
-				0: top.memory[(`CONV_IMAGE_OFFSET >> 2) + (i >> 2)][7: 0] = cc;
-				1: top.memory[(`CONV_IMAGE_OFFSET >> 2) + (i >> 2)][ 15: 8] = cc;
-				2: top.memory[(`CONV_IMAGE_OFFSET >> 2) + (i >> 2)][ 23: 16] = cc;
-				3: top.memory[(`CONV_IMAGE_OFFSET >> 2) + (i >> 2)][ 31: 24] = cc;
+		while($fscanf(mjpeg_in,"%e", cc)!= -1) begin
+			$display("%d", cc);
+			case(i % 4)
+				0: begin
+					top.memory[(`RAW_IMAGE_OFFSET >> 2) + (i >> 2)][7: 0] = cc;
+					$display("%d", top.memory[(`RAW_IMAGE_OFFSET >> 2) + (i >> 2)][7: 0]);
+				end
+				1: begin
+					top.memory[(`RAW_IMAGE_OFFSET >> 2) + (i >> 2)][ 15: 8] = cc;
+					$display("%d", top.memory[(`RAW_IMAGE_OFFSET >> 2) + (i >> 2)][15: 8]);
+				end
+				2: begin
+				 	top.memory[(`RAW_IMAGE_OFFSET >> 2) + (i >> 2)][ 23: 16] = cc;
+					$display("%d", top.memory[(`RAW_IMAGE_OFFSET >> 2) + (i >> 2)][23: 16]);
+				end
+				3: begin
+					top.memory[(`RAW_IMAGE_OFFSET >> 2) + (i >> 2)][ 31: 24] = cc;
+					$display("%d", top.memory[(`RAW_IMAGE_OFFSET >> 2) + (i >> 2)][31: 24]);
+				end
 			endcase
 			i = i+1;
-		end  
-		top.memory[(`CONV_IMAGE_OFFSET >> 2) + (i >> 2) + 1] = 0;
-		$fclose(dnn_in);
-
-		dnn_in = $fopen(`CONV_WEIGHT_SOURCE, "r");
-		i = 0;
-		while ($fscanf(dnn_in,"%e", cc)!= -1) begin
-			case(i % 4) 
-				0: top.memory[(`CONV_WEIGHT_OFFSET >> 2) + (i >> 2)][7: 0] = cc;
-				1: top.memory[(`CONV_WEIGHT_OFFSET >> 2) + (i >> 2)][ 15: 8] = cc;
-				2: top.memory[(`CONV_WEIGHT_OFFSET >> 2) + (i >> 2)][ 23: 16] = cc;
-				3: top.memory[(`CONV_WEIGHT_OFFSET >> 2) + (i >> 2)][ 31: 24] = cc;
-			endcase
-			i = i+1;
-		end  
-		$fclose(dnn_in);
-
-		dnn_in = $fopen(`FC_INPUT_SOURCE, "r");
-		i = 0;
-		while ($fscanf(dnn_in,"%e", cc)!= -1) begin
-			case(i % 4) 
-				0: top.memory[(`FC_IMAGE_OFFSET >> 2) + (i >> 2)][7: 0] = cc;
-				1: top.memory[(`FC_IMAGE_OFFSET >> 2) + (i >> 2)][ 15: 8] = cc;
-				2: top.memory[(`FC_IMAGE_OFFSET >> 2) + (i >> 2)][ 23: 16] = cc;
-				3: top.memory[(`FC_IMAGE_OFFSET >> 2) + (i >> 2)][ 31: 24] = cc;
-			endcase
-			i = i+1;
-		end  
-		$fclose(dnn_in);
-
-		dnn_in = $fopen(`FC_WEIGHT_SOURCE, "r");
-		i = 0;
-		while ($fscanf(dnn_in,"%e", cc)!= -1) begin
-			case(i % 4) 
-				0: top.memory[(`FC_WEIGHT_OFFSET >> 2) + (i >> 2)][7: 0] = cc;
-				1: top.memory[(`FC_WEIGHT_OFFSET >> 2) + (i >> 2)][ 15: 8] = cc;
-				2: top.memory[(`FC_WEIGHT_OFFSET >> 2) + (i >> 2)][ 23: 16] = cc;
-				3: top.memory[(`FC_WEIGHT_OFFSET >> 2) + (i >> 2)][ 31: 24] = cc;
-			endcase
-			i = i+1;
-		end  
-		$fclose(dnn_in);
-
+		end
+		top.memory[(`RAW_IMAGE_OFFSET >> 2) + (i >> 2) + 1] = 0;
+		$fclose(mjpeg_in);
 	end
-	
+
 	picorv32_wrapper top (
 		.clk(clk),
 		.resetn(resetn),
@@ -173,13 +138,13 @@ module picorv32_wrapper (
 	wire [31:0] mem_la_addr;
 	wire [31:0] mem_la_wdata;
 	wire [3:0] mem_la_wstrb;
-	
+
 	wire memory_valid;
 	wire [31:0] memory_addr;
 	wire [31:0] memory_wdata;
 	wire memory_write;
 	wire [3:0] memory_wstrb;
-	
+
 	wire mmap_en = (memory_addr >= DNN_MMAP_BASE) && (memory_addr <= (DNN_MMAP_BASE + DNN_MMAP_RANG));
 	wire [31:0] mmap_rdata;
 	wire mmap_ready;
@@ -239,60 +204,60 @@ module picorv32_wrapper (
 		.trace_valid (trace_valid ),
 		.trace_data  (trace_data  )
 	);
-    
+
 	`ifdef SYNTHESIS
 		parameter mem_delay = `MEM_DELAY;
 	`endif
-        
-	DNN_MMAP dnn_mmap(
-		.clk(clk),
-		.en(mmap_en),
-		.rst_n(resetn),
-		.addr(mem_addr),
-		.valid(mem_valid),
-		.wstrb(mem_wstrb),
-		.ready(mmap_ready),
-		.wdata(mem_wdata),
-		.rdata(mmap_rdata),
-		
-		//memory interface
-		.mem_ready_0(mmap_mem_ready_0),
-		.mem_valid_0(mmap_mem_valid_0),
-		.mem_addr_0(mmap_mem_addr_0),
-		.mem_rdata_0(mmap_mem_rdata_0),
-		.mem_write_0(mmap_mem_write_0),
-		.mem_wdata_0(mmap_mem_wdata_0),
 
-		//memory interface
-		.mem_ready_1(mmap_mem_ready_1),
-		.mem_valid_1(mmap_mem_valid_1),
-		.mem_addr_1(mmap_mem_addr_1),
-		.mem_rdata_1(mmap_mem_rdata_1),
-		.mem_write_1(mmap_mem_write_1),
-		.mem_wdata_1(mmap_mem_wdata_1),
+	// DNN_MMAP dnn_mmap(
+	// 	.clk(clk),
+	// 	.en(mmap_en),
+	// 	.rst_n(resetn),
+	// 	.addr(mem_addr),
+	// 	.valid(mem_valid),
+	// 	.wstrb(mem_wstrb),
+	// 	.ready(mmap_ready),
+	// 	.wdata(mem_wdata),
+	// 	.rdata(mmap_rdata),
+	//
+	// 	//memory interface
+	// 	.mem_ready_0(mmap_mem_ready_0),
+	// 	.mem_valid_0(mmap_mem_valid_0),
+	// 	.mem_addr_0(mmap_mem_addr_0),
+	// 	.mem_rdata_0(mmap_mem_rdata_0),
+	// 	.mem_write_0(mmap_mem_write_0),
+	// 	.mem_wdata_0(mmap_mem_wdata_0),
+	//
+	// 	//memory interface
+	// 	.mem_ready_1(mmap_mem_ready_1),
+	// 	.mem_valid_1(mmap_mem_valid_1),
+	// 	.mem_addr_1(mmap_mem_addr_1),
+	// 	.mem_rdata_1(mmap_mem_rdata_1),
+	// 	.mem_write_1(mmap_mem_write_1),
+	// 	.mem_wdata_1(mmap_mem_wdata_1),
+	//
+	// 	//memory interface
+	// 	.mem_ready_2(mmap_mem_ready_2),
+	// 	.mem_valid_2(mmap_mem_valid_2),
+	// 	.mem_addr_2(mmap_mem_addr_2),
+	// 	.mem_rdata_2(mmap_mem_rdata_2),
+	// 	.mem_write_2(mmap_mem_write_2),
+	// 	.mem_wdata_2(mmap_mem_wdata_2)
+	// );
 
-		//memory interface
-		.mem_ready_2(mmap_mem_ready_2),
-		.mem_valid_2(mmap_mem_valid_2),
-		.mem_addr_2(mmap_mem_addr_2),
-		.mem_rdata_2(mmap_mem_rdata_2),
-		.mem_write_2(mmap_mem_write_2),
-		.mem_wdata_2(mmap_mem_wdata_2)
-	);
-	
 	reg [31:0] memory [0: `MEM_SIZE-1];
 	reg [31:0] m_read_data;
 	reg m_read_en, mmap_m_read_en;
-	
+
 	assign memory_ready = mmap_en ? mmap_ready : mem_ready;
     assign memory_rdata = mmap_en ? mmap_rdata : mem_rdata;
-	
+
 	assign memory_valid = mem_valid & !mmap_en;
 	assign memory_addr = FAST_MEMORY ? mem_la_addr : mem_addr;
 	assign memory_wdata = FAST_MEMORY ? mem_la_wdata : mem_wdata;
 	assign memory_write = mem_la_write;
 	assign memory_wstrb = FAST_MEMORY ? mem_la_wstrb : mem_wstrb;
-	
+
 	//Port1: MMAP memory access
 	always @(posedge clk) begin
 		mmap_mem_ready_0 <= mmap_mem_valid_0;
@@ -321,8 +286,8 @@ module picorv32_wrapper (
 				2'd2: {memory[(mmap_mem_addr_0 >> 2)+1][15:0], memory[mmap_mem_addr_0 >> 2][31:16]} <= mmap_mem_wdata_0;
 				2'd3: {memory[(mmap_mem_addr_0 >> 2)+1][23:0], memory[mmap_mem_addr_0 >> 2][31:24]} <= mmap_mem_wdata_0;
 			endcase
-		end 
-		
+		end
+
 		if ((mmap_mem_addr_0 >> 2) > `MEM_SIZE) begin
 			$display("MMAP OUT-OF-BOUNDS MEMORY ACCESS TO %08x", mmap_mem_addr_0);
 			$display("mmap_mem_addr_0 = %b", mmap_mem_addr_0);
@@ -330,7 +295,7 @@ module picorv32_wrapper (
 			$finish;
 		end
     end
-	
+
 	always @(posedge clk) begin
 		mmap_mem_ready_1 <= mmap_mem_valid_1;
 		mmap_mem_rdata_1 <= 0;
@@ -358,8 +323,8 @@ module picorv32_wrapper (
 				2'd2: {memory[(mmap_mem_addr_1 >> 2)+1][15:0], memory[mmap_mem_addr_1 >> 2][31:16]} <= mmap_mem_wdata_1;
 				2'd3: {memory[(mmap_mem_addr_1 >> 2)+1][23:0], memory[mmap_mem_addr_1 >> 2][31:24]} <= mmap_mem_wdata_1;
 			endcase
-		end 
-		
+		end
+
 		if ((mmap_mem_addr_1 >> 2) > `MEM_SIZE) begin
 			$display("MMAP OUT-OF-BOUNDS MEMORY ACCESS TO %08x", mmap_mem_addr_1);
 			$display("mmap_mem_addr_1 = %b", mmap_mem_addr_1);
@@ -395,8 +360,8 @@ module picorv32_wrapper (
 				2'd2: {memory[(mmap_mem_addr_2 >> 2)+1][15:0], memory[mmap_mem_addr_2 >> 2][31:16]} <= mmap_mem_wdata_2;
 				2'd3: {memory[(mmap_mem_addr_2 >> 2)+1][23:0], memory[mmap_mem_addr_2 >> 2][31:24]} <= mmap_mem_wdata_2;
 			endcase
-		end 
-		
+		end
+
 		if ((mmap_mem_addr_2 >> 2) > `MEM_SIZE) begin
 			$display("MMAP OUT-OF-BOUNDS MEMORY ACCESS TO %08x", mmap_mem_addr_2);
 			$display("mmap_mem_addr_2 = %b", mmap_mem_addr_2);
@@ -419,7 +384,7 @@ module picorv32_wrapper (
 			else if (memory_write && memory_addr == 32'h1000_0000) begin
 				$write("%c", memory_wdata[7:0]);
 				$fflush();
-			end 
+			end
 			else if (memory_write && memory_addr != 32'h1000_0000) begin
 				if (memory_addr == 32'h2000_0000) begin
 					if (memory_wdata == 123456789) tests_finshed <= 1;
@@ -469,7 +434,7 @@ module picorv32_wrapper (
 	end endgenerate
 
 	integer cycle_counter;
-	
+
 	always @(posedge clk) begin
 		cycle_counter <= resetn ? cycle_counter + 1 : 0;
 		if (resetn && trap) begin

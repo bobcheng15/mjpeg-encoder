@@ -6,10 +6,8 @@
 // means.
 
 #define ENABLE_QREGS
-#define ENABLE_DNN_MMAP
+#define ENABLE_MJPEG_MMAP
 #define ENABLE_STATS
-//#define ENABLE_MULTST
-//#define ENABLE_DNN_PCPI
 
 // Only save registers in IRQ wrapper that are to be saved by the caller in
 // the RISC-V ABI, with the excpetion of the stack pointer. The IRQ handler
@@ -25,9 +23,7 @@
 	.global hard_mulh
 	.global hard_mulhsu
 	.global hard_mulhu
-	.global dnn_mmap
-	.global dnn_pcpi
-	.global hard_dnn_pcpi
+	.global mjpeg_mmap
 	.global soft_conv
 	.global soft_fc
 	.global stats
@@ -390,14 +386,9 @@ start:
 	jal ra,multest
 #endif
 
-#ifdef ENABLE_DNN_PCPI
-	/* call dnn_pcpi C code */
-	jal ra,dnn_pcpi
-#endif
-
-#ifdef ENABLE_DNN_MMAP
-	/* call dnn_mmap C code */
-	jal ra,dnn_mmap
+#ifdef ENABLE_MJPEG_MMAP
+	/* call mjpeg_mmap C code */
+	jal ra,mjpeg_mmap
 #endif
 
 #ifdef ENABLE_STATS
@@ -443,10 +434,4 @@ hard_mulhsu:
 
 hard_mulhu:
 	mulhu a0, a0, a1
-	ret
-
-/* Hard functions for dnn_pcpi.c
- **********************************/
-hard_dnn_pcpi:
-	picorv32_custom_insn (a0, a0, a1)
 	ret

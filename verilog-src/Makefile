@@ -4,7 +4,7 @@ RISCV_GNU_TOOLCHAIN_INSTALL_PREFIX = /users/course/tools/riscv32
 
 SHELL = bash
 TEST_OBJS = $(addsuffix .o,$(basename $(wildcard tests/*.S)))
-FIRMWARE_OBJS = firmware/start.o firmware/irq.o firmware/print.o firmware/multest.o firmware/dnn_pcpi.o firmware/dnn_mmap.o firmware/stats.o
+FIRMWARE_OBJS = firmware/start.o firmware/irq.o firmware/print.o firmware/multest.o firmware/mjpeg_mmap.o firmware/stats.o
 DBFILE      = *.fsdb *.vcd *.bak
 TMPFILE     = *.log ncverilog.key nWaveLog INCA_libs novas.*
 GCC_WARNS  = -Wall -Wextra -Wshadow -Wundef -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings
@@ -16,11 +16,8 @@ ID = 0
 # Add things like "export http_proxy=... https_proxy=..." here
 GIT_ENV = true
 
-pcpi: firmware/firmware.hex
-	ncverilog testbench_pcpi.v dnn_pcpi.v picorv32.v +define+COMPRESSED_ISA +access+r
-
 mmap: firmware/firmware.hex
-	ncverilog testbench_mmap.v dnn_mmap.v picorv32.v +define+COMPRESSED_ISA +access+r
+	ncverilog testbench_mmap.v picorv32.v +define+COMPRESSED_ISA +access+r
 
 mmap_syn: firmware/firmware.hex
 	ncverilog header.v testbench_mmap.v dnn_syn.v picorv32.v \
