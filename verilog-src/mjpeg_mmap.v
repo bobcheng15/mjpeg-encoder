@@ -1,4 +1,4 @@
-module DNN_MMAP (
+module MJPEG_MMAP (
     input clk,
     input en,
     input rst_n,
@@ -25,7 +25,7 @@ module DNN_MMAP (
     output [31:0] mem_wdata_1     // output_wdata
 );
 
-// DNN_MMAP's address mapping
+// MJPE_MMAP's address mapping
 // TODO 0
 // Assign your own memory mapping here
 // I have defined some addresses which you may use for your accelerator.
@@ -34,13 +34,13 @@ module DNN_MMAP (
 // Keep your memory address alligned to 4 bytes, so you won't run into any trouble.
 // Each memory address represents 1 byte, so each MMAP mapping jumps at least 4 bytes = 32bits
 // e.g. 0x0, 0x4, 0x8, 0xc
-parameter MPEG_MMAP_BASE = 32'h4000_0000;
-parameter MPEG_MMAP_RANG = 32'h0000_ffff;
-parameter MPEG_MMAP_READ_FINISH    = 32'h0000_0000;
-parameter MPEG_MMAP_WRITE_NUM_COEF = 32'h0000_0004; // jump 4bytes = 32bits
-parameter MPEG_MMAP_INPUT_OFFSET   = 32'h0000_002c;
-parameter MPEG_MMAP_OUTPUT_OFFSET  = 32'h0000_0034;
-parameter MPEG_MMAP_WRITE_START    = 32'h0000_0038;
+parameter MJPEG_MMAP_BASE = 32'h4000_0000;
+parameter MJPEG_MMAP_RANG = 32'h0000_ffff;
+parameter MJPEG_MMAP_READ_FINISH    = 32'h0000_0000;
+parameter MJPEG_MMAP_WRITE_NUM_COEF = 32'h0000_0004; // jump 4bytes = 32bits
+parameter MJPEG_MMAP_INPUT_OFFSET   = 32'h0000_002c;
+parameter MJPEG_MMAP_OUTPUT_OFFSET  = 32'h0000_0034;
+parameter MJPEG_MMAP_WRITE_START    = 32'h0000_0038;
 
 // Accelerator register
 reg start, finish;
@@ -50,7 +50,7 @@ wire Ready;
 
 // Internal masked address
 wire [31:0] dnn_addr;
-assign dnn_addr = (addr) & DNN_MMAP_RANG;
+assign dnn_addr = (addr) & MJPEG_MMAP_RANG;
 
 // Accelerator memory port
 wire [15:0] input_addr, output_addr;
@@ -110,35 +110,35 @@ begin
                 case (dnn_addr)
 		            // TODO 4
                     // Implement your MMAP read routine here
-                    MPEG_MMAP_READ_FINISH: begin
+                    MJPEG_MMAP_READ_FINISH: begin
                         rdata <= finish;
                         ready <= 1;
                         finish <= (finish == 1) ? 0 : finish;
                     end
-                    default: $display("DNN_MMAP: read invalid reg: %h(%h)", dnn_addr, addr);
+                    default: $display("MJPEG_MMAP: read invalid reg: %h(%h)", dnn_addr, addr);
                 endcase
             end else begin      //write
                 case (dnn_addr)
 		            // TODO 5
                     // Implement your MMAP write routine here
-                    MPEG_MMAP_WRITE_NUM_COEF: begin
+                    MJPEG_MMAP_WRITE_NUM_COEF: begin
                         num_coef <= wdata[6:0];
                         ready <= 1;
                     end
-                    DNN_MMAP_WRITE_START: begin
+                    MJPEG_MMAP_WRITE_START: begin
                         start <= wdata[0];
                         ready <= 1;
                     end
-                    DNN_MMAP_INPUT_OFFSET: begin
+                    MJPEG_MMAP_INPUT_OFFSET: begin
                         input_offset <= wdata;
                         ready <= 1;
                     end
-                    DNN_MMAP_OUTPUT_OFFSET: begin
+                    MJPEG_MMAP_OUTPUT_OFFSET: begin
                         output_offset <= wdata;
                         ready <= 1;
                     end
 
-                    default: $display("DNN_MMAP: write invalid reg: %h(%h)", dnn_addr, addr);
+                    default: $display("MJPEG_MMAP: write invalid reg: %h(%h)", dnn_addr, addr);
                 endcase
             end
         end

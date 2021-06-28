@@ -17,7 +17,7 @@ ID = 0
 GIT_ENV = true
 
 mmap: firmware/firmware.hex
-	ncverilog testbench_mmap.v picorv32.v +define+COMPRESSED_ISA +access+r
+	ncverilog testbench_mmap.v picorv32.v mjpeg_mmap.v mjpeg_pipeline.v +define+COMPRESSED_ISA +access+r
 
 mmap_syn: firmware/firmware.hex
 	ncverilog header.v testbench_mmap.v dnn_syn.v picorv32.v \
